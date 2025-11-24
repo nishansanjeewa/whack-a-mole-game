@@ -1,9 +1,5 @@
 # 🐹 Whack-a-Mole Game
 
-![GitHub last commit](https://img.shields.io/github/last-commit/your-username/whack-a-mole)
-![GitHub issues](https://img.shields.io/github/issues/your-username/whack-a-mole)
-![GitHub license](https://img.shields.io/github/license/your-username/whack-a-mole)
-
 **Whack-a-Mole** is a fun, interactive, single-page web game built with **HTML, CSS, and JavaScript**. Click or tap on moles as they pop up to score points before time runs out. The game is fully **mobile responsive**, touch-friendly, and includes a **celebration animation** when you win!
 
 ---
