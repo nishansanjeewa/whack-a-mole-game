@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Whack-a-Mole Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body {
+        background: #f9fafb;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .game-info {
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    #game {
+        width: 100%;
+        max-width: 420px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 12px;
+    }
+
+    .hole {
+        background: #333;
+        border-radius: 12px;
+        height: 100px;
+        position: relative;
+        overflow: hidden;
+        touch-action: manipulation;
+    }
+
+    .mole {
+        width: 70px;
+        height: 70px;
+        background: #8b4513;
+        border-radius: 50%;
+        position: absolute;
+        bottom: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        transition: 0.25s ease;
+    }
+
+    .up {
+        bottom: 10px !important;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 18px;
+        border: none;
+        background: #2563eb;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #1d4ed8;
+    }
+
+    /* Celebration popup */
+    #celebration {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        font-size: 28px;
+        text-align: center;
+        flex-direction: column;
+        z-index: 999;
+        padding: 20px;
+    }
+
+    #restartBtn {
+        margin-top: 20px;
+        padding: 12px 30px;
+        font-size: 20px;
+        background: #10b981;
+        border-radius: 10px;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    #restartBtn:hover {
+        background: #059669;
+    }
+
+    .confetti {
+        width: 10px;
+        height: 10px;
+        background: red;
+        position: absolute;
+        animation: fall 1.2s linear infinite;
+    }
+
+    @keyframes fall {
+        from { transform: translateY(-20px); opacity: 1; }
+        to { transform: translateY(300px); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+        .hole { height: 90px; }
+        .mole { width: 60px; height: 60px; }
+        h1 { font-size: 24px; }
+        .game-info { font-size: 18px; }
+    }
+</style>
+</head>
+<body>
+
+<h1>Whack-a-Mole 🐹</h1>
+
+<div class="game-info">
+    Score: <span id="score">0</span> |
+    Time: <span id="time">20</span>s
+</div>
+
+<div id="game"></div>
+
+<button id="startBtn" onclick="startGame()">Start Game</button>
+
+<!-- Celebration Popup -->
+<div id="celebration">
+    <div>🎉 YOU WIN! 🎉<br>Awesome Job!</div>
+    <button id="restartBtn" onclick="restartGame()">Restart</button>
+</div>
+
+<script>
+    const gameBoard = document.getElementById("game");
+    const scoreDisplay = document.getElementById("score");
+    const timeDisplay = document.getElementById("time");
+    const celebration = document.getElementById("celebration");
+
+    let score = 0;
+    let time = 20;
+    let gameInterval;
+    let moleInterval;
+    let isGameRunning = false;
+
+    let WIN_SCORE = 20;
+
+    // Create holes + moles
+    for (let i = 0; i < 9; i++) {
+        let hole = document.createElement("div");
+        hole.classList.add("hole");
+
+        let mole = document.createElement("div");
+        mole.classList.add("mole");
+
+        // Touch + click support
+        mole.addEventListener("pointerdown", () => {
+            if (!isGameRunning) return;
+            score++;
+            scoreDisplay.textContent = score;
+            mole.classList.remove("up");
+
+            if (score >= WIN_SCORE) {
+                endGame(true);
+            }
+        });
+
+        hole.appendChild(mole);
+        gameBoard.appendChild(hole);
+    }
+
+    function startGame() {
+        if (isGameRunning) return;
+        isGameRunning = true;
+
+        score = 0;
+        time = 20;
+        celebration.style.display = "none";
+        clearConfetti();
+
+        scoreDisplay.textContent = score;
+        timeDisplay.textContent = time;
+
+        gameInterval = setInterval(() => {
+            time--;
+            timeDisplay.textContent = time;
+            if (time <= 0) {
+                endGame(false);
+            }
+        }, 1000);
+
+        moleInterval = setInterval(randomMole, 800);
+    }
+
+    function restartGame() {
+        celebration.style.display = "none";
+        clearConfetti();
+        startGame();
+    }
+
+    function endGame(isWin) {
+        isGameRunning = false;
+        clearInterval(gameInterval);
+        clearInterval(moleInterval);
+
+        // hide all moles
+        document.querySelectorAll(".mole").forEach(m => m.classList.remove("up"));
+
+        if (isWin) {
+            showCelebration();
+        } else {
+            alert("Game Over! Your Score: " + score);
+        }
+    }
+
+    function randomMole() {
+        const moles = document.querySelectorAll(".mole");
+
+        moles.forEach(m => m.classList.remove("up"));
+
+        let random = Math.floor(Math.random() * moles.length);
+        moles[random].classList.add("up");
+
+        setTimeout(() => {
+            moles[random].classList.remove("up");
+        }, 600);
+    }
+
+    // 🎉 Celebration functions
+    function showCelebration() {
+        celebration.style.display = "flex";
+        spawnConfetti(50);
+    }
+
+    function spawnConfetti(count) {
+        for (let i = 0; i < count; i++) {
+            let conf = document.createElement("div");
+            conf.classList.add("confetti");
+            conf.style.left = Math.random() * window.innerWidth + "px";
+            conf.style.background = randomColor();
+            conf.style.animationDuration = (1 + Math.random()) + "s";
+            celebration.appendChild(conf);
+        }
+    }
+
+    function clearConfetti() {
+        document.querySelectorAll(".confetti").forEach(c => c.remove());
+    }
+
+    function randomColor() {
+        return "hsl(" + Math.random() * 360 + ", 100%, 50%)";
+    }
+</script>
+
+</body>
+</html>
